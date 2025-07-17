@@ -1,0 +1,104 @@
+{% extends 'core/base.html' %}
+{% block title %}Admin Disputes{% endblock %}
+{% block extra_css %}
+<style>
+    .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+    .data-table th { background-color: #f8f9fa; }
+    .btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; cursor: pointer; border: none; font-weight: 600; margin-right: 0.5rem; }
+    .btn-danger { background-color: #dc3545; color: white; }
+    .btn-warning { background-color: #ffc107; color: #212529; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main-header" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+    <h1 style="margin: 0;">Active Disputes</h1>
+    <a href="{% url 'core:admin_dashboard' %}" class="btn btn-warning">Back to Dashboard</a>
+</div>
+<div class="card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Dispute</th>
+                <th>Employer</th>
+                <th>Freelancer</th>
+                <th>Actions</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dispute in disputes %}
+            <tr>
+                <td>
+                    <strong>{{ dispute.title }}</strong><br>
+                    <small>{{ dispute.description|truncatechars:80 }}</small>
+                </td>
+                <td>
+                    {{ dispute.contract.job.client.username }}<br>
+                    <button class="btn btn-danger" onclick="banUser({{ dispute.contract.job.client.id }})">Ban</button>
+                    <button class="btn btn-warning" onclick="timeoutUser({{ dispute.contract.job.client.id }})">Timeout</button>
+                </td>
+                <td>
+                    {{ dispute.contract.freelancer.username }}<br>
+                    <button class="btn btn-danger" onclick="banUser({{ dispute.contract.freelancer.id }})">Ban</button>
+                    <button class="btn btn-warning" onclick="timeoutUser({{ dispute.contract.freelancer.id }})">Timeout</button>
+                </td>
+                <td>{{ dispute.status|title }}</td>
+                <td>
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <!-- Optionally add resolve/close actions here -->
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No active disputes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+function banUser(userId) {
+    if (confirm('Are you sure you want to ban this user?')) {
+        fetch('{% url 'core:admin_ban_user' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: 'user_id=' + userId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User banned successfully.');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not ban user.'));
+            }
+        });
+    }
+}
+function timeoutUser(userId) {
+    let minutes = prompt('Timeout for how many minutes?', 60);
+    if (minutes && !isNaN(minutes)) {
+        fetch('{% url 'core:admin_timeout_user' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: 'user_id=' + userId + '&timeout_minutes=' + minutes
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User timed out successfully.');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not timeout user.'));
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

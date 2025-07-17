@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Test Messages - Gig Nepal{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+    <h1>Message Test Page</h1>
+    
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h2>User Information</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>User ID:</strong> {{ user.id }}</p>
+        <p><strong>Total Messages:</strong> {{ total_messages }}</p>
+        <p><strong>Conversation Partners:</strong> {{ partners|length }}</p>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h2>Conversation Partners</h2>
+        {% if partners %}
+            <ul>
+            {% for partner in partners %}
+                <li>{{ partner.username }} (ID: {{ partner.id }})</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No conversation partners found.</p>
+        {% endif %}
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h2>Recent Messages (First 10)</h2>
+        {% if all_messages %}
+            {% for message in all_messages %}
+            <div style="border: 1px solid #dee2e6; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; background: white;">
+                <p><strong>From:</strong> {{ message.sender.username }} (ID: {{ message.sender.id }})</p>
+                <p><strong>To:</strong> {{ message.recipient.username }} (ID: {{ message.recipient.id }})</p>
+                <p><strong>Content:</strong> {{ message.content }}</p>
+                <p><strong>Time:</strong> {{ message.created_at }}</p>
+                <p><strong>Read:</strong> {{ message.is_read }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No messages found.</p>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center;">
+        <a href="{% url 'users:inbox' %}" class="btn btn-primary" style="padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; margin-right: 1rem;">Go to Inbox</a>
+        <a href="{% url 'core:home' %}" class="btn btn-secondary" style="padding: 12px 24px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px;">Go Home</a>
+    </div>
+</div>
+{% endblock %} 

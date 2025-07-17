@@ -1,0 +1,591 @@
+<div class="messages-content">
+    <div class="messages-header">
+        <h2><i class="fas fa-comments"></i> Messages</h2>
+        <p class="text-muted">Connect with your clients and freelancers</p>
+    </div>
+    
+    <div class="messages-container">
+        <div class="conversations-sidebar">
+            <div class="conversations-header">
+                <h5><i class="fas fa-users"></i> Conversations</h5>
+                <span class="conversation-count">{{ partners|length }}</span>
+            </div>
+            
+            <div class="conversations-list">
+                {% if partners %}
+                    {% for partner in partners %}
+                        <div class="conversation-item" data-partner-id="{{ partner.id }}">
+                            <div class="conversation-avatar">
+                                {% if partner.profile_picture %}
+                                    <img src="{{ partner.profile_picture.url }}" alt="{{ partner.username }}" class="avatar-img">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        <span>{{ partner.username|first|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="online-indicator"></div>
+                            </div>
+                            <div class="conversation-details">
+                                <div class="conversation-name">{{ partner.username }}</div>
+                                <div class="conversation-preview">
+                                    <span class="text-muted">Click to view conversation</span>
+                                </div>
+                            </div>
+                            <div class="conversation-meta">
+                                <div class="conversation-time">
+                                    <small class="text-muted">Click to chat</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-conversations">
+                        <div class="empty-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <p>No conversations yet</p>
+                        <small class="text-muted">Start messaging when you connect with clients or freelancers</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <div class="selected-conversation">
+                    <div class="conversation-avatar">
+                        <div class="avatar-placeholder">
+                            <span>?</span>
+                        </div>
+                    </div>
+                    <div class="conversation-info">
+                        <h5>Select a conversation</h5>
+                        <small class="text-muted">Choose a conversation to start messaging</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h4>Welcome to Messages</h4>
+                    <p>Select a conversation from the sidebar to start messaging</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-area" style="display: none;">
+                <form id="message-form" class="message-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="message-input" placeholder="Type your message..." maxlength="500">
+                        <button class="btn btn-primary send-btn" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="message-actions">
+                        <small class="text-muted">Press Enter to send</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.messages-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.messages-header {
+    padding: 20px 24px;
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.messages-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.messages-header h2 i {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+.messages-container {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+}
+
+.conversations-sidebar {
+    width: 320px;
+    background: white;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+}
+
+.conversations-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.conversations-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.conversations-header h5 i {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+.conversation-count {
+    background: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.conversations-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.conversation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.conversation-item.active {
+    background-color: #e3f2fd;
+    border-left: 3px solid #007bff;
+}
+
+.conversation-avatar {
+    position: relative;
+    margin-right: 12px;
+}
+
+.avatar-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.conversation-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-preview {
+    font-size: 0.875rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.unread-badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.empty-conversations {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: #dee2e6;
+}
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+.chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background: white;
+}
+
+.selected-conversation {
+    display: flex;
+    align-items: center;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.welcome-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: #dee2e6;
+}
+
+.welcome-message h4 {
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.message-item {
+    margin-bottom: 16px;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.message-bubble.sent {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 6px;
+}
+
+.message-bubble.received {
+    background: white;
+    color: #2c3e50;
+    border: 1px solid #e9ecef;
+    border-bottom-left-radius: 6px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+
+.chat-input-area {
+    padding: 20px 24px;
+    border-top: 1px solid #e9ecef;
+    background: white;
+}
+
+.message-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.message-form .form-control {
+    border: 1px solid #e9ecef;
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.message-form .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.send-btn {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.send-btn:hover {
+    transform: scale(1.05);
+}
+
+.message-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Scrollbar styling */
+.conversations-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.conversations-list::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+.conversations-list::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+}
+
+.conversations-list::-webkit-scrollbar-thumb:hover,
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .messages-container {
+        flex-direction: column;
+    }
+    
+    .conversations-sidebar {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .chat-area {
+        height: calc(100vh - 400px);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInputArea = document.querySelector('.chat-input-area');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const selectedConversation = document.querySelector('.selected-conversation');
+    
+    let currentPartnerId = null;
+    
+    // Handle conversation selection
+    conversationItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const partnerId = this.dataset.partnerId;
+            const partnerName = this.querySelector('.conversation-name').textContent;
+            const partnerAvatar = this.querySelector('.avatar-img') || this.querySelector('.avatar-placeholder');
+            
+            // Update active state
+            conversationItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update chat header
+            selectedConversation.innerHTML = `
+                <div class="conversation-avatar">
+                    ${partnerAvatar.outerHTML}
+                </div>
+                <div class="conversation-info">
+                    <h5>${partnerName}</h5>
+                    <small class="text-muted">Online</small>
+                </div>
+            `;
+            
+            // Load messages for this conversation
+            loadConversation(partnerId);
+            currentPartnerId = partnerId;
+            
+            // Show input area
+            chatInputArea.style.display = 'block';
+        });
+    });
+    
+    // Load conversation messages
+    function loadConversation(partnerId) {
+        // Get messages for this conversation from the server
+        fetch(`{% url 'users:conversation' %}?partner_id=${partnerId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayMessages(data.messages);
+                } else {
+                    console.error('Error loading conversation:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+    
+    // Display messages in chat
+    function displayMessages(messages) {
+        if (messages.length === 0) {
+            chatMessages.innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h4>No messages yet</h4>
+                    <p>Start the conversation by sending a message</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const messagesHTML = messages.map(message => {
+            const isSent = message.sender_id == {{ user.id }};
+            const messageTime = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            return `
+                <div class="message-item">
+                    <div class="message-bubble ${isSent ? 'sent' : 'received'}">
+                        <div class="message-content">${message.content}</div>
+                        <div class="message-time">${messageTime}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        chatMessages.innerHTML = messagesHTML;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Handle message sending
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentPartnerId) {
+            alert('Please select a conversation first');
+            return;
+        }
+        
+        const messageContent = messageInput.value.trim();
+        if (!messageContent) return;
+        
+        // Send message via AJAX
+        fetch('{% url "users:send_message" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: `recipient_id=${currentPartnerId}&content=${encodeURIComponent(messageContent)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                messageInput.value = '';
+                // Reload conversation to show new message
+                loadConversation(currentPartnerId);
+            } else {
+                alert('Error sending message: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error sending message');
+        });
+    });
+    
+    // Auto-resize textarea (if using textarea instead of input)
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    
+    // Enter key to send message
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+});
+</script> 

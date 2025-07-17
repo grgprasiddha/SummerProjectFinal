@@ -1,0 +1,230 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ job.title }} - Gig Nepal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+    .contract-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+    }
+    .contract-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .contract-info-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    .contract-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .contract-btn {
+        background: white;
+        color: #667eea;
+        border: 2px solid white;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .contract-btn:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    }
+    .dispute-btn {
+        background: rgba(220, 53, 69, 0.8);
+        color: white;
+        border: 2px solid rgba(220, 53, 69, 0.8);
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .dispute-btn:hover {
+        background: rgba(220, 53, 69, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+    .contract-btn[style*="background: #28a745"]:hover {
+        background: #218838 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    @media (max-width: 768px) {
+        .contract-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .contract-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ job.title }}</h1>
+    
+    <div style="background: #f8f9fa; padding: 2rem; border-radius: 8px; margin: 2rem 0;">
+        <p><strong>Budget:</strong> NRS{{ job.budget }}</p>
+        <p><strong>Category:</strong> {{ job.get_category_display }}</p>
+        <p><strong>Deadline:</strong> {{ job.deadline }}</p>
+        <p><strong>Status:</strong> {{ job.get_status_display }}</p>
+        <p><strong>Posted by:</strong> {{ job.client.username }}</p>
+        <p><strong>Posted on:</strong> {{ job.created_at|date:"M d, Y" }}</p>
+        {% if user == job.client or user.is_superuser %}
+            <a href="{% url 'jobs:edit_job' job.id %}" class="btn btn-primary" style="margin-top: 1rem;">Edit Job</a>
+        {% endif %}
+    </div>
+    
+    <div style="margin: 2rem 0;">
+        <h2>Description</h2>
+        <p>{{ job.description }}</p>
+        
+        {% if job.requirements %}
+        <h3>Requirements</h3>
+        <p>{{ job.requirements }}</p>
+        {% endif %}
+    </div>
+    
+    {% if contract %}
+        <div class="contract-section">
+            <h2 style="margin: 0 0 1rem 0; color: white;">🎉 Contract Active!</h2>
+            <div class="contract-info-grid">
+                <div class="contract-info-item">
+                    <strong>Freelancer:</strong> {{ contract.freelancer.username }}
+                </div>
+                <div class="contract-info-item">
+                    <strong>Status:</strong> {{ contract.get_status_display }}
+                </div>
+                <div class="contract-info-item">
+                    <strong>Start Date:</strong> {{ contract.start_date|date:"M d, Y" }}
+                </div>
+                <div class="contract-info-item">
+                    <strong>End Date:</strong> {{ contract.end_date|date:"M d, Y" }}
+                </div>
+            </div>
+            
+            {% if user == contract.freelancer or user == contract.job.client %}
+                <div class="contract-actions">
+                    <a href="{% url 'jobs:contract_detail' contract.id %}" class="contract-btn">
+                        💬 Open Messages & Contract Details
+                    </a>
+                    <a href="{% url 'jobs:raise_dispute' contract.id %}" class="dispute-btn">
+                        ⚠️ Raise Dispute
+                    </a>
+                    
+                    <!-- Job Completion Button for Freelancer -->
+                    {% if user == contract.freelancer and contract.status != 'completed' and not contract.completed_by_freelancer %}
+                        <form method="post" action="{% url 'jobs:complete_job' contract.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="contract-btn" style="background: #28a745; color: white; border-color: #28a745;">
+                                ✅ Mark as Completion
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    <!-- Job Confirmation Buttons for Client -->
+                    {% if user == contract.job.client and contract.completed_by_freelancer and not contract.confirmed_by_client %}
+                        <form method="post" action="{% url 'jobs:confirm_job_completion' contract.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="contract-btn" style="background: #28a745; color: white; border-color: #28a745;">
+                                ✅ Confirm Completion
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'jobs:raise_dispute' contract.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="dispute-btn">
+                                ⚠️ Raise Dispute Instead
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% elif user.is_authenticated and user != job.client %}
+        {% if user.profile.current_role == 'freelancer' %}
+            {% if user_has_proposal %}
+                <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <p><strong>You have already submitted a job request for this gig.</strong></p>
+                </div>
+            {% else %}
+                <a href="{% url 'jobs:submit_proposal' job.id %}" class="btn btn-primary">Apply for this Job</a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    
+    {% if user == job.client or user.is_superuser %}
+    <div style="margin: 2rem 0;">
+        <h2>Job Requests ({{ proposals.count }})</h2>
+        {% for proposal in proposals %}
+        <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
+            <h4>Request from {{ proposal.freelancer.username }}</h4>
+            <p><strong>Bid Amount:</strong> NRS{{ proposal.bid_amount }}</p>
+            <p><strong>Estimated Days:</strong> {{ proposal.estimated_days }}</p>
+            <p><strong>Status:</strong> {{ proposal.get_status_display }}</p>
+            <p><strong>Cover Letter:</strong></p>
+            <p>{{ proposal.cover_letter }}</p>
+            <p><strong>Submitted:</strong> {{ proposal.created_at|date:"M d, Y H:i" }}</p>
+            <div style="margin-top: 0.5rem;">
+                {% if proposal.status == 'pending' %}
+                    <form method="post" action="{% url 'jobs:approve_proposal' proposal.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+                    <form method="post" action="{% url 'jobs:disapprove_proposal' proposal.id %}" style="display:inline; margin-left: 0.5rem;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Disapprove</button>
+                    </form>
+                {% else %}
+                    <span class="badge badge-info">{{ proposal.get_status_display }}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p>No job requests yet.</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,136 @@
+{% extends 'core/base.html' %}
+{% block title %}Notifications - Gig Nepal{% endblock %}
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>Notifications</h1>
+        {% if notifications %}
+        <button onclick="markAllRead()" class="btn btn-secondary">Mark All as Read</button>
+        {% endif %}
+    </div>
+    
+    {% if notifications %}
+        <div class="notifications-list">
+            {% for notification in notifications %}
+            <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                 data-notification-id="{{ notification.id }}">
+                <div class="notification-header">
+                    <h4>{{ notification.title }}</h4>
+                    <small>{{ notification.created_at|date:"M d, Y H:i" }}</small>
+                </div>
+                <p>{{ notification.message }}</p>
+                <div class="notification-actions">
+                    {% if notification.related_job %}
+                        <a href="{% url 'jobs:job_detail' notification.related_job.id %}" class="btn btn-primary btn-sm">View Job</a>
+                    {% endif %}
+                    {% if not notification.is_read %}
+                        <button onclick="markAsRead({{ notification.id }})" class="btn btn-secondary btn-sm">Mark as Read</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <h3>No notifications yet</h3>
+            <p>You'll see notifications here when you receive job requests, messages, or other updates.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.notifications-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.notification-item {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.notification-item.unread {
+    border-left: 4px solid #007bff;
+    background: #f8f9fa;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.notification-header h4 {
+    margin: 0;
+    color: #333;
+}
+
+.notification-header small {
+    color: #6c757d;
+}
+
+.notification-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/users/notifications/mark-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const notification = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            notification.classList.remove('unread');
+            const markReadBtn = notification.querySelector('.btn-secondary');
+            if (markReadBtn) {
+                markReadBtn.remove();
+            }
+        }
+    });
+}
+
+function markAllRead() {
+    fetch('/users/notifications/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.classList.remove('unread');
+            });
+            document.querySelectorAll('.btn-secondary').forEach(btn => {
+                if (btn.textContent === 'Mark as Read') {
+                    btn.remove();
+                }
+            });
+        }
+    });
+}
+</script>
+{% endblock %} 

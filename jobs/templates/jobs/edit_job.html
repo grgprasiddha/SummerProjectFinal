@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Edit Job - {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 2rem auto;">
+    <h1>Edit Job: {{ job.title }}</h1>
+    <form method="post" enctype="multipart/form-data" style="background: #f8f9fa; padding: 2rem; border-radius: 8px;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-secondary" style="margin-left: 1rem;">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

@@ -1,0 +1,957 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Gig Nepal{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c67ff;
+        --primary-light: #4a7cff;
+        --primary-dark: #1a4bb8;
+        --dark-color: #1a253c;
+        --gray-color: #6c757d;
+        --light-color: #ffffff;
+        --bg-color: #f8f9fa;
+        --border-color: #e9ecef;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+        --sidebar-width: 280px;
+        --border-radius: 12px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body { 
+        font-family: var(--font-family); 
+        margin: 0; 
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: var(--dark-color); 
+        line-height: 1.6;
+    }
+
+    .admin-wrapper { 
+        display: flex; 
+        min-height: 100vh;
+        background: transparent;
+    }
+
+    /* Enhanced Sidebar */
+    .sidebar {
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, var(--dark-color) 0%, #2c3e50 100%);
+        color: var(--light-color);
+        min-height: 100vh;
+        height: auto;
+        padding: 2rem 1.5rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        z-index: 10;
+    }
+
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(44, 103, 255, 0.1) 0%, rgba(26, 37, 60, 0.1) 100%);
+        pointer-events: none;
+    }
+
+    .sidebar-header {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-header img {
+        height: 80px;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--light-color);
+        text-decoration: none;
+        display: block;
+    }
+
+    .sidebar-nav {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar-nav li a {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 1rem 1.25rem;
+        text-decoration: none;
+        border-radius: var(--border-radius);
+        transition: all 0.3s ease;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sidebar-nav li a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .sidebar-nav li a:hover::before {
+        left: 100%;
+    }
+
+    .sidebar-nav li a:hover, 
+    .sidebar-nav li a.active {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: var(--light-color);
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.3);
+    }
+
+    .sidebar-nav li a i {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+
+    .sidebar-footer {
+        position: relative;
+        z-index: 2;
+        margin-top: auto;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-footer a {
+        width: 100%;
+        display: block;
+        background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+        color: var(--light-color);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+    }
+
+    .sidebar-footer a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 2rem;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        overflow-y: auto;
+    }
+
+    .main-header {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .main-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .menu-toggle {
+        display: none;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle:hover {
+        background: var(--primary-dark);
+        transform: scale(1.05);
+    }
+
+    /* Enhanced Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card h3 {
+        margin: 0 0 1rem 0;
+        color: var(--gray-color);
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-card .value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .trend {
+        font-size: 0.9rem;
+        color: var(--success-color);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stat-card.danger .value {
+        color: var(--danger-color);
+    }
+
+    .stat-card.warning .value {
+        color: var(--warning-color);
+    }
+
+    /* Enhanced Cards */
+    .content-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header .btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .card-header .btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    /* Enhanced Data Table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .data-table th {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: var(--dark-color);
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 2px solid var(--border-color);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .data-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .data-table a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    /* Enhanced Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.3);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
+        color: #212529;
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    /* Enhanced Badges */
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%);
+        color: white;
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
+        color: #212529;
+    }
+
+    .badge-danger {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+        color: white;
+    }
+
+    /* Enhanced Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        min-width: 400px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: auto;
+        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--dark-color);
+        font-size: 1.5rem;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--gray-color);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: var(--border-color);
+        color: var(--dark-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .sidebar {
+            position: fixed;
+            left: -100%;
+            z-index: 1000;
+            transition: left 0.3s ease;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        .main-content {
+            width: 100%;
+            margin-left: 0;
+            padding: 1rem;
+        }
+        
+        .menu-toggle {
+            display: block;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        .card-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+
+    @media (min-width: 993px) {
+        .menu-toggle {
+            display: none;
+        }
+    }
+
+    /* Loading Animation */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--gray-color);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+    }
+
+    .empty-state p {
+        margin: 0;
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar">
+    <div class="navbar-logo">
+        <a href="{% url 'core:admin_dashboard' %}">
+            <img src="{% static 'core/images/gig nepal logo.png' %}" alt="Gig Nepal Logo" style="height: 80px; margin-right: 20px; vertical-align: middle;">
+        </a>
+    </div>
+    <div class="navbar-center">
+        <ul class="navbar-links">
+            <li><a href="{% url 'core:admin_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="{% url 'core:admin_manage_users' %}"><i class="fas fa-users"></i> Manage Users</a></li>
+            <li><a href="{% url 'jobs:admin_disputes' %}"><i class="fas fa-exclamation-triangle"></i> Disputes</a></li>
+            <li><a href="{% url 'jobs:browse' %}"><i class="fas fa-briefcase"></i> All Jobs</a></li>
+        </ul>
+    </div>
+    <div class="navbar-actions">
+        <a href="{% url 'users:logout' %}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-wrapper">
+    <aside class="sidebar" id="admin-sidebar">
+        <div class="sidebar-header">
+            <img src="{% static 'core/images/gig nepal logo.png' %}" alt="Gig Nepal Logo">
+            <a href="{% url 'core:admin_dashboard' %}" class="sidebar-title">Admin Panel</a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="{% url 'core:admin_dashboard' %}" class="active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a></li>
+                <li><a href="/admin/">
+                    <i class="fas fa-cog"></i> Django Admin
+                </a></li>
+                <li><a href="{% url 'jobs:browse' %}">
+                    <i class="fas fa-briefcase"></i> All Jobs
+                </a></li>
+                <li><a href="{% url 'core:admin_manage_users' %}">
+                    <i class="fas fa-users-cog"></i> Manage Users
+                </a></li>
+                <li><a href="{% url 'jobs:admin_disputes' %}">
+                    <i class="fas fa-exclamation-triangle"></i> Disputes
+                </a></li>
+                <li><a href="#" class="btn btn-primary" id="open-withdrawal-modal" style="margin: 1rem 0;">
+                    <i class="fas fa-money-bill-wave"></i> Withdrawal Requests
+                </a></li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{% url 'users:logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content" id="admin-main-content">
+        <div class="main-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+            <div class="header-actions">
+                <button class="menu-toggle" id="admin-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Enhanced Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3><i class="fas fa-users"></i> Total Users</h3>
+                <div class="value">{{ total_users }}</div>
+                <div class="trend"><i class="fas fa-arrow-up"></i> Registered</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-briefcase"></i> Total Jobs</h3>
+                <div class="value">{{ total_jobs }}</div>
+                <div class="trend"><i class="fas fa-chart-line"></i> Posted</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-folder-open"></i> Open Jobs</h3>
+                <div class="value">{{ open_jobs }}</div>
+                <div class="trend"><i class="fas fa-clock"></i> Active</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-check-circle"></i> Completed Jobs</h3>
+                <div class="value">{{ completed_jobs }}</div>
+                <div class="trend"><i class="fas fa-star"></i> Success</div>
+            </div>
+            <div class="stat-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Total Disputes</h3>
+                <div class="value">{{ total_disputes }}</div>
+                <div class="trend"><i class="fas fa-chart-bar"></i> Reported</div>
+            </div>
+            <div class="stat-card danger">
+                <h3><i class="fas fa-exclamation-circle"></i> Open Disputes</h3>
+                <div class="value">{{ open_disputes }}</div>
+                <div class="trend"><i class="fas fa-clock"></i> Pending</div>
+            </div>
+        </div>
+
+        <!-- Recent Jobs Section -->
+        <div class="content-section">
+            <div class="card-header">
+                <h2><i class="fas fa-briefcase"></i> Recent Jobs</h2>
+                <a href="{% url 'jobs:browse' %}" class="btn">
+                    <i class="fas fa-eye"></i> View All Jobs
+                </a>
+            </div>
+            <div class="card-content">
+                {% if recent_jobs %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Client</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                            <th>Posted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_jobs %}
+                        <tr>
+                            <td><a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a></td>
+                            <td>{{ job.client.username }}</td>
+                            <td><strong>NRS{{ job.budget }}</strong></td>
+                            <td>
+                                {% if job.status == 'open' %}
+                                    <span class="badge badge-success">Open</span>
+                                {% elif job.status == 'completed' %}
+                                    <span class="badge badge-warning">Completed</span>
+                                {% else %}
+                                    <span class="badge badge-danger">{{ job.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ job.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-briefcase"></i>
+                    <h3>No Jobs Found</h3>
+                    <p>There are no jobs posted yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Disputes Section -->
+        {% if recent_disputes %}
+        <div class="content-section">
+            <div class="card-header">
+                <h2><i class="fas fa-exclamation-triangle"></i> Recent Open Disputes</h2>
+                <a href="{% url 'jobs:admin_disputes' %}" class="btn">
+                    <i class="fas fa-eye"></i> View All Disputes
+                </a>
+            </div>
+            <div class="card-content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Contract</th>
+                            <th>Raised By</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dispute in recent_disputes %}
+                        <tr>
+                            <td><strong>{{ dispute.title }}</strong></td>
+                            <td><a href="{% url 'jobs:contract_detail' dispute.contract.id %}">{{ dispute.contract.job.title }}</a></td>
+                            <td>{{ dispute.raised_by.username }}</td>
+                            <td>{{ dispute.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'jobs:admin_dispute_detail' dispute.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Enhanced Withdrawal Requests Modal -->
+        <div id="withdrawalModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-money-bill-wave"></i> Pending Withdrawal Requests</h2>
+                    <button onclick="closeWithdrawalModal()" class="modal-close">&times;</button>
+                </div>
+                <div class="card-content">
+                    {% if withdrawal_requests %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in withdrawal_requests %}
+                            <tr>
+                                <td><strong>{{ payment.payer.username }}</strong></td>
+                                <td><strong>NRS{{ payment.amount }}</strong></td>
+                                <td>{{ payment.created_at|date:"M d, Y H:i" }}</td>
+                                <td><span class="badge badge-warning">Pending</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <h3>No Pending Withdrawals</h3>
+                        <p>There are no pending withdrawal requests at the moment.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const sidebar = document.getElementById('admin-sidebar');
+    const mainContent = document.getElementById('admin-main-content');
+    const toggle = document.getElementById('admin-menu-toggle');
+    
+    if (toggle) {
+        toggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 992) {
+            if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        }
+    });
+
+    // Withdrawal modal functionality
+    const withdrawalBtn = document.getElementById('open-withdrawal-modal');
+    const withdrawalModal = document.getElementById('withdrawalModal');
+    
+    function closeWithdrawalModal() {
+        withdrawalModal.style.display = 'none';
+    }
+    
+    if (withdrawalBtn && withdrawalModal) {
+        withdrawalBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            withdrawalModal.style.display = 'flex';
+        });
+    }
+
+    // Close modal when clicking outside
+    withdrawalModal.addEventListener('click', function(e) {
+        if (e.target === withdrawalModal) {
+            closeWithdrawalModal();
+        }
+    });
+
+    // Add smooth animations to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    statCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Add loading states to buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.classList.contains('no-loading')) {
+                const originalContent = this.innerHTML;
+                this.innerHTML = '<span class="loading"></span> Loading...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = originalContent;
+                    this.disabled = false;
+                }, 2000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

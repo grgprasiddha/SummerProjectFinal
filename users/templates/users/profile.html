@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Profile - Gig Nepal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Profile</h2>
+    <p>Welcome, {{ user.username }}!</p>
+    <a href="{% url 'users:edit_profile' %}" class="btn btn-secondary">Edit Profile</a>
+</div>
+{% endblock %} 

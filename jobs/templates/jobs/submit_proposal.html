@@ -1,0 +1,271 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Apply for Job - Gig Nepal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .proposal-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    .job-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+    }
+    .job-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .job-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 400;
+        opacity: 0.9;
+    }
+    .job-meta {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    .job-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .job-meta-item strong {
+        font-weight: 600;
+    }
+    .proposal-form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .form-section h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+        font-weight: 700;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    .bid-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .bid-section h4 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    .bid-input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .bid-input-group input {
+        flex: 1;
+    }
+    .currency-label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 40px;
+    }
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-1px);
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    .tips-section {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 2rem;
+    }
+    .tips-section h4 {
+        margin: 0 0 0.5rem 0;
+        color: #1976d2;
+        font-size: 1rem;
+    }
+    .tips-section ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: #1565c0;
+    }
+    .tips-section li {
+        margin-bottom: 0.3rem;
+    }
+    @media (max-width: 768px) {
+        .proposal-container {
+            padding: 0 0.5rem;
+        }
+        .job-meta {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="proposal-container">
+    <div class="job-header">
+        <h1>Apply for this Job</h1>
+        <h2>{{ job.title }}</h2>
+        <div class="job-meta">
+            <div class="job-meta-item">
+                <strong>Budget:</strong> NRS{{ job.budget }}
+            </div>
+            <div class="job-meta-item">
+                <strong>Category:</strong> {{ job.get_category_display }}
+            </div>
+            <div class="job-meta-item">
+                <strong>Deadline:</strong> {{ job.deadline|date:"M d, Y" }}
+            </div>
+        </div>
+    </div>
+
+    <div class="proposal-form-card">
+        <div class="tips-section">
+            <h4>💡 Tips for a successful proposal:</h4>
+            <ul>
+                <li>Be specific about your approach and timeline</li>
+                <li>Highlight relevant experience and skills</li>
+                <li>Provide a competitive but fair bid amount</li>
+                <li>Show enthusiasm and professionalism</li>
+            </ul>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3>Your Proposal</h3>
+                
+                <div class="bid-section">
+                    <h4>Bid Details</h4>
+                    <div class="form-group">
+                        <label for="{{ form.bid_amount.id_for_label }}">Your Bid Amount</label>
+                        <div class="bid-input-group">
+                            <span class="currency-label">NRS</span>
+                            {{ form.bid_amount }}
+                        </div>
+                        {% if form.bid_amount.errors %}
+                            <div style="color: #dc3545; font-size: 0.9rem; margin-top: 0.5rem;">
+                                {{ form.bid_amount.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.estimated_days.id_for_label }}">Estimated Days to Complete</label>
+                        {{ form.estimated_days }}
+                        {% if form.estimated_days.errors %}
+                            <div style="color: #dc3545; font-size: 0.9rem; margin-top: 0.5rem;">
+                                {{ form.estimated_days.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.cover_letter.id_for_label }}">Cover Letter</label>
+                    <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        Introduce yourself and explain why you're the best fit for this job. Include your approach, relevant experience, and any questions you have.
+                    </p>
+                    {{ form.cover_letter }}
+                    {% if form.cover_letter.errors %}
+                        <div style="color: #dc3545; font-size: 0.9rem; margin-top: 0.5rem;">
+                            {{ form.cover_letter.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Submit Proposal</button>
+                <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

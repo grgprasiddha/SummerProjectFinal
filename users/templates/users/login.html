@@ -1,0 +1,151 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Login - SproutGigs Clone{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c67ff;
+        --secondary-color: #f0f4ff;
+        --dark-color: #1a253c;
+        --gray-color: #6c757d;
+        --light-color: #ffffff;
+        --border-color: #dee2e6;
+        --font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    body {
+        background-color: var(--secondary-color);
+    }
+    .page-header {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+    }
+    .header-logo a {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--dark-color);
+        text-decoration: none;
+    }
+    .auth-container {
+        background-color: var(--light-color);
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        margin: 4rem auto 1rem auto;
+    }
+    .auth-container h1 {
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(44, 103, 255, 0.2);
+    }
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+    a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        background-color: var(--primary-color);
+        color: var(--light-color);
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-submit:hover {
+        background-color: #1a4ccc;
+    }
+    .switch-auth {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div class="header-logo">
+        <a href="{% url 'core:home' %}">SproutGigs</a>
+    </div>
+</header>
+<div class="auth-container">
+    <h1>Welcome Back!</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'Switched to' not in message %}
+                <div id="login-message" style="color: #b94a48; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem;">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+        <script>
+            setTimeout(function() {
+                var msg = document.getElementById('login-message');
+                if (msg) { msg.style.display = 'none'; }
+            }, 5000);
+        </script>
+    {% endif %}
+    <form method="post" action="">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div style="color: #b94a48; margin-bottom: 1rem;">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-group">
+            <label for="id_username">Email or Username</label>
+            <input type="text" id="id_username" name="username" required autofocus value="{{ form.username.value|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            <input type="password" id="id_password" name="password" required>
+        </div>
+        <div class="form-options">
+            <div>
+                <input type="checkbox" id="remember-me" name="remember-me">
+                <label for="remember-me" style="font-weight: normal; display: inline;">Remember Me</label>
+            </div>
+            <a href="#">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn-submit">Log In</button>
+    </form>
+    <div class="switch-auth">
+        Don't have an account? <a href="{% url 'users:register' %}">Sign Up</a>
+    </div>
+</div>
+{% endblock %} 

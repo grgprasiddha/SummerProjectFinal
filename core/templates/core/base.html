@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gig Nepal - Freelance Marketplace{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'core/images/favicon.ico' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+    <style>
+    .navbar {
+        position: relative;
+        z-index: 10;
+        height: 64px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+    }
+    .dashboard-wrapper, .sidebar {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Notification Dropdown Styles */
+    .notification-dropdown {
+        position: relative;
+        margin-right: 15px;
+    }
+    
+    .notification-toggle {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-toggle:hover {
+        background: #f8f9fa;
+        color: #007bff;
+    }
+    
+    .notification-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .notification-panel {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 380px;
+        max-height: 500px;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        z-index: 1000;
+        display: none;
+        overflow: hidden;
+    }
+    
+    .notification-panel.show {
+        display: block;
+    }
+    
+    .notification-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+    
+    .notification-header h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .mark-all-read-btn {
+        background: none;
+        border: none;
+        color: #007bff;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .mark-all-read-btn:hover {
+        background: #e3f2fd;
+    }
+    
+    .notification-list {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+    
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: background 0.2s;
+        position: relative;
+    }
+    
+    .notification-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .notification-item.unread {
+        background: #f0f8ff;
+    }
+    
+    .notification-item.unread:hover {
+        background: #e3f2fd;
+    }
+    
+    .notification-icon {
+        margin-right: 12px;
+        margin-top: 2px;
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .notification-message {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+    
+    .notification-time {
+        color: #adb5bd;
+        font-size: 0.75rem;
+    }
+    
+    .notification-status {
+        margin-left: 8px;
+    }
+    
+    .unread-dot {
+        width: 8px;
+        height: 8px;
+        background: #007bff;
+        border-radius: 50%;
+        display: block;
+    }
+    
+    .no-notifications {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .no-notifications i {
+        font-size: 2rem;
+        margin-bottom: 12px;
+        color: #dee2e6;
+    }
+    
+    .no-notifications p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .notification-footer {
+        padding: 12px 20px;
+        border-top: 1px solid #e9ecef;
+        text-align: center;
+        background: #f8f9fa;
+    }
+    
+    .view-all-notifications {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .view-all-notifications:hover {
+        text-decoration: underline;
+    }
+    
+    /* Color classes for notification icons */
+    .text-primary { color: #007bff; }
+    .text-success { color: #28a745; }
+    .text-warning { color: #ffc107; }
+    .text-info { color: #17a2b8; }
+    .text-secondary { color: #6c757d; }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .notification-panel {
+            width: 320px;
+            right: -50px;
+        }
+    }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <header class="main-header">
+        {% block navbar %}
+            {% if user.is_authenticated and user.is_superuser and 'admin_' in request.resolver_match.url_name|default:'' %}
+                <!-- No nav for admin pages -->
+            {% else %}
+                <nav class="navbar">
+                    <div class="navbar-logo">
+                        <a href="{% url 'core:home' %}"><img src="{% static 'core/images/gig nepal logo.png' %}" alt="Gig Nepal Logo" style="height: 150px; margin-right: 20px; vertical-align: middle;"></a>
+                    </div>
+                    <div class="navbar-center">
+                        <ul class="navbar-links" id="navbar-links">
+                            <li><a href="{% url 'jobs:browse' %}">Browse Gigs</a></li>
+                            <li><a href="#">About Us</a></li>
+                            {% if user.is_authenticated %}
+                                {% if user.is_superuser %}
+                                    <li><a href="{% url 'core:admin_dashboard' %}">Admin Dashboard</a></li>
+                                {% elif user.profile.current_role == 'freelancer' %}
+                                    <li><a href="{% url 'core:freelancer_dashboard' %}">My Dashboard</a></li>
+                                {% elif user.profile.current_role == 'client' %}
+                                    <li><a href="{% url 'core:client_dashboard' %}">My Dashboard</a></li>
+                                {% endif %}
+                                <li><a href="{% url 'jobs:my_jobs' %}">My Jobs</a></li>
+                                <li><a href="{% url 'payments:wallet' %}">Wallet</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="navbar-actions">
+                        {% if user.is_authenticated %}
+                            <!-- Notification Dropdown -->
+                            <div class="notification-dropdown">
+                                <button class="notification-toggle" id="notification-toggle">
+                                    <i class="fas fa-bell"></i>
+                                    {% if unread_notifications_count > 0 %}
+                                        <span class="notification-badge">{{ unread_notifications_count }}</span>
+                                    {% endif %}
+                                </button>
+                                <div class="notification-panel" id="notification-panel">
+                                    <div class="notification-header">
+                                        <h4>Notifications</h4>
+                                        {% if unread_notifications_count > 0 %}
+                                            <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">
+                                                Mark all read
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    <div class="notification-list">
+                                        {% for notification in recent_notifications %}
+                                            <div class="notification-item {% if not notification.is_read %}unread{% endif %}" data-notification-id="{{ notification.id }}">
+                                                <div class="notification-icon">
+                                                    {% if notification.notification_type == 'job_proposal' %}
+                                                        <i class="fas fa-file-alt text-primary"></i>
+                                                    {% elif notification.notification_type == 'contract' %}
+                                                        <i class="fas fa-handshake text-success"></i>
+                                                    {% elif notification.notification_type == 'payment' %}
+                                                        <i class="fas fa-credit-card text-warning"></i>
+                                                    {% elif notification.notification_type == 'message' %}
+                                                        <i class="fas fa-envelope text-info"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-bell text-secondary"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="notification-content">
+                                                    <div class="notification-title">{{ notification.title }}</div>
+                                                    <div class="notification-message">{{ notification.message }}</div>
+                                                    <div class="notification-time">{{ notification.created_at|timesince }} ago</div>
+                                                </div>
+                                                {% if not notification.is_read %}
+                                                    <div class="notification-status">
+                                                        <span class="unread-dot"></span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% empty %}
+                                            <div class="no-notifications">
+                                                <i class="fas fa-bell-slash"></i>
+                                                <p>No notifications yet</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if total_notifications_count > 5 %}
+                                        <div class="notification-footer">
+                                            <a href="{% url 'users:notifications' %}" class="view-all-notifications">
+                                                View all notifications
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'users:profile' %}" class="btn-login">{{ user.username }}</a>
+                            <a href="{% url 'users:logout' %}" class="btn btn-secondary">Logout</a>
+                        {% else %}
+                            <a href="{% url 'users:login' %}" class="btn-login">Log In</a>
+                            <a href="{% url 'users:register' %}" class="btn btn-secondary">Sign Up</a>
+                        {% endif %}
+                    </div>
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Open Navigation Menu">&#9776;</button>
+                </nav>
+            {% endif %}
+        {% endblock %}
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <!-- ======================= Footer ======================= -->
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="{% url 'jobs:browse' %}?category=graphic-design">Graphic & Design</a></li>
+                    <li><a href="{% url 'jobs:browse' %}?category=digital-marketing">Digital Marketing</a></li>
+                    <li><a href="{% url 'jobs:browse' %}?category=writing-translation">Writing & Translation</a></li>
+                    <li><a href="{% url 'jobs:browse' %}?category=video-animation">Video & Animation</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press & News</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help & Support</a></li>
+                    <li><a href="#">Trust & Safety</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Forum</a></li>
+                    <li><a href="#">Affiliates</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Gig Nepal. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ======================= JavaScript ======================= -->
+    <script src="{% static 'core/js/main.js' %}"></script>
+    
+    <!-- Notification Dropdown JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationToggle = document.getElementById('notification-toggle');
+        const notificationPanel = document.getElementById('notification-panel');
+        
+        if (notificationToggle && notificationPanel) {
+            // Toggle notification panel
+            notificationToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationPanel.classList.toggle('show');
+            });
+            
+            // Close panel when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationToggle.contains(e.target) && !notificationPanel.contains(e.target)) {
+                    notificationPanel.classList.remove('show');
+                }
+            });
+            
+            // Handle notification item clicks
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const notificationId = this.dataset.notificationId;
+                    if (notificationId) {
+                        markNotificationRead(notificationId);
+                        this.classList.remove('unread');
+                        const unreadDot = this.querySelector('.unread-dot');
+                        if (unreadDot) {
+                            unreadDot.remove();
+                        }
+                    }
+                });
+            });
+        }
+    });
+    
+    // Mark single notification as read
+    function markNotificationRead(notificationId) {
+        fetch(`/users/notifications/mark-read/${notificationId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateNotificationBadge();
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    }
+    
+    // Mark all notifications as read
+    function markAllNotificationsRead() {
+        fetch('/users/notifications/mark-all-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove unread styling from all notifications
+                const unreadNotifications = document.querySelectorAll('.notification-item.unread');
+                unreadNotifications.forEach(item => {
+                    item.classList.remove('unread');
+                    const unreadDot = item.querySelector('.unread-dot');
+                    if (unreadDot) {
+                        unreadDot.remove();
+                    }
+                });
+                
+                // Hide mark all read button
+                const markAllBtn = document.querySelector('.mark-all-read-btn');
+                if (markAllBtn) {
+                    markAllBtn.style.display = 'none';
+                }
+                
+                updateNotificationBadge();
+            }
+        })
+        .catch(error => console.error('Error marking all notifications as read:', error));
+    }
+    
+    // Update notification badge count
+    function updateNotificationBadge() {
+        const badge = document.querySelector('.notification-badge');
+        const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+        
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

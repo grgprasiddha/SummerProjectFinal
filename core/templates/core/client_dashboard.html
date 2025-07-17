@@ -1,0 +1,1002 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Client Dashboard - Gig Nepal{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c67ff;
+        --primary-light: #4a7cff;
+        --primary-dark: #1a4bb8;
+        --dark-color: #1a253c;
+        --gray-color: #6c757d;
+        --light-color: #ffffff;
+        --bg-color: #f8f9fa;
+        --border-color: #e9ecef;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+        --sidebar-width: 280px;
+        --border-radius: 12px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body { 
+        font-family: var(--font-family); 
+        margin: 0; 
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: var(--dark-color); 
+        line-height: 1.6;
+    }
+
+    .dashboard-wrapper { 
+        display: flex; 
+        min-height: calc(100vh - 64px);
+        background: transparent;
+    }
+
+    /* Enhanced Sidebar */
+    .sidebar {
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, var(--dark-color) 0%, #2c3e50 100%);
+        color: var(--light-color);
+        min-height: 100vh;
+        height: auto;
+        padding: 2rem 1.5rem;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        z-index: 10;
+    }
+
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(44, 103, 255, 0.1) 0%, rgba(26, 37, 60, 0.1) 100%);
+        pointer-events: none;
+    }
+
+    .sidebar-header { 
+        text-align: center; 
+        margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .user-profile { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 1rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .user-profile img { 
+        width: 80px; 
+        height: 80px; 
+        border-radius: 50%; 
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.3);
+        object-fit: cover;
+    }
+
+    .user-profile h4 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--light-color);
+    }
+
+    .role-switcher-wrapper { 
+        width: 100%; 
+        text-align: center; 
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .role-switcher { 
+        display: flex; 
+        gap: 0.5rem; 
+        width: 100%; 
+        justify-content: center; 
+        background: rgba(255,255,255,0.15); 
+        padding: 8px; 
+        border-radius: var(--border-radius);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .role-switcher input { 
+        display: none; 
+    }
+
+    .role-switcher label { 
+        flex: 1; 
+        text-align: center; 
+        padding: 12px 16px; 
+        cursor: pointer; 
+        border-radius: 8px; 
+        transition: all 0.3s ease; 
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .role-switcher input:checked + label { 
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        color: var(--light-color); 
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.3);
+    }
+
+    .sidebar-nav { 
+        flex-grow: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .sidebar-nav ul { 
+        list-style: none; 
+        padding: 0; 
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .sidebar-nav li a { 
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.8); 
+        padding: 1rem 1.2rem; 
+        text-decoration: none; 
+        border-radius: var(--border-radius); 
+        transition: all 0.3s ease;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sidebar-nav li a::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+        transition: width 0.3s ease;
+        z-index: -1;
+    }
+
+    .sidebar-nav li a:hover::before,
+    .sidebar-nav li a.active::before {
+        width: 100%;
+    }
+
+    .sidebar-nav li a:hover, 
+    .sidebar-nav li a.active { 
+        color: var(--light-color);
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.2);
+    }
+
+    .sidebar-nav li a i {
+        font-size: 1.1rem;
+        width: 20px;
+        text-align: center;
+    }
+
+    .sidebar-footer { 
+        margin-top: auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .logout-btn {
+        display: block;
+        background: linear-gradient(135deg, var(--danger-color), #e74c3c);
+        color: var(--light-color) !important;
+        padding: 14px 0;
+        border-radius: var(--border-radius);
+        text-align: center;
+        font-weight: 600;
+        margin: 20px 0 0 0;
+        border: none;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .logout-btn:hover {
+        background: linear-gradient(135deg, #e74c3c, var(--danger-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        text-decoration: none;
+    }
+
+    /* Enhanced Main Content */
+    .main-content { 
+        padding: 2rem; 
+        box-sizing: border-box; 
+        flex: 1;
+        background: transparent;
+    }
+
+    .dashboard-wrapper .main-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 2rem;
+        background: var(--light-color);
+        padding: 1.5rem 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+    }
+
+    .dashboard-wrapper .main-header h1 { 
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .content-panel { 
+        display: none;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .content-panel.active { 
+        display: block;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Enhanced Stats Grid */
+    .stats-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card { 
+        background: var(--light-color);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card h3 {
+        margin: 0 0 1rem 0;
+        color: var(--gray-color);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-card .value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .trend {
+        font-size: 0.9rem;
+        color: var(--success-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-card .trend.down {
+        color: var(--danger-color);
+    }
+
+    /* Enhanced Cards */
+    .card { 
+        background: var(--light-color);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .card h2 {
+        margin: 0 0 1.5rem 0;
+        color: var(--dark-color);
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card h2 i {
+        color: var(--primary-color);
+        font-size: 1.3rem;
+    }
+
+    /* Enhanced Data Table */
+    .data-table { 
+        width: 100%; 
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .data-table th, 
+    .data-table td { 
+        padding: 1rem; 
+        text-align: left; 
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: var(--dark-color);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .data-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .data-table td {
+        font-size: 0.95rem;
+    }
+
+    /* Enhanced Buttons */
+    .btn { 
+        padding: 12px 24px; 
+        border-radius: 8px; 
+        text-decoration: none; 
+        cursor: pointer; 
+        border: none; 
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary { 
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        color: white;
+        box-shadow: 0 4px 15px rgba(44, 103, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 103, 255, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: var(--gray-color);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Enhanced Wallet Section */
+    .wallet-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        color: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .wallet-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .wallet-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .wallet-info h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .wallet-balance {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .wallet-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .withdraw-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .withdraw-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Enhanced Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background-color: var(--light-color);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: var(--shadow-lg);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-content h3 {
+        margin-bottom: 1.5rem;
+        color: var(--dark-color);
+        font-size: 1.3rem;
+    }
+
+    .modal-content input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        margin-bottom: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .modal-content input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(44, 103, 255, 0.1);
+    }
+
+    .modal-content .btn {
+        margin: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) { 
+        .sidebar { 
+            left: -100%; 
+            z-index: 1000; 
+            transition: left 0.3s; 
+        } 
+        .sidebar.active { 
+            left: 0; 
+        } 
+        .main-content { 
+            width: 100%; 
+            margin-left: 0; 
+        } 
+        .menu-toggle { 
+            display: block; 
+            font-size: 1.5rem; 
+            background: none; 
+            border: none; 
+            cursor: pointer;
+            color: var(--primary-color);
+        } 
+    } 
+    
+    @media (min-width: 993px) { 
+        .menu-toggle { 
+            display: none; 
+        } 
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .wallet-content {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .wallet-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <aside class="sidebar" id="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="user-profile">
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="User Avatar">
+                {% else %}
+                    <img src="/static/core/images/default-avatar.png" alt="User Avatar">
+                {% endif %}
+                <h4>{{ user.profile.full_name }}</h4>
+            </div>
+            <div class="role-switcher-wrapper">
+                <span style="color: rgba(255,255,255,0.8); font-weight: 600; display: block; margin-bottom: 0.5rem;">Switch Role:</span>
+                <div class="role-switcher">
+                    <input type="radio" id="employer-role" name="role" value="employer" {% if user.profile.current_role == 'client' %}checked{% endif %}>
+                    <label for="employer-role">Employer</label>
+                    <input type="radio" id="freelancer-role" name="role" value="freelancer" {% if user.profile.current_role == 'freelancer' %}checked{% endif %}>
+                    <label for="freelancer-role">Freelancer</label>
+                </div>
+                {% csrf_token %}
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul id="employer-nav" {% if user.profile.current_role != 'client' %}style="display:none;"{% endif %}>
+                <li><a href="#employer-dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+                <li><a href="{% url 'jobs:post_job' %}"><i class="fas fa-plus-circle"></i>Post a Job</a></li>
+                <li><a href="#employer-manage-jobs" class="nav-link"><i class="fas fa-tasks"></i>Manage Jobs</a></li>
+                <li><a href="#messages" class="nav-link"><i class="fas fa-comments"></i>Messages</a></li>
+                <li><a href="#wallet" class="nav-link"><i class="fas fa-wallet"></i>Wallet</a></li>
+                <li><a href="#settings" class="nav-link"><i class="fas fa-cog"></i>Settings</a></li>
+            </ul>
+            <ul id="freelancer-nav" {% if user.profile.current_role != 'freelancer' %}style="display:none;"{% endif %}>
+                <li><a href="#freelancer-dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+                <li><a href="#freelancer-find-work" class="nav-link"><i class="fas fa-search"></i>Find Work</a></li>
+                <li><a href="#freelancer-my-proposals" class="nav-link"><i class="fas fa-file-alt"></i>My Job Requests</a></li>
+                <li><a href="#messages" class="nav-link"><i class="fas fa-comments"></i>Messages</a></li>
+                <li><a href="#wallet" class="nav-link"><i class="fas fa-wallet"></i>Wallet</a></li>
+                <li><a href="#settings" class="nav-link"><i class="fas fa-cog"></i>Settings</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{% url 'users:logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i>Logout</a>
+        </div>
+    </aside>
+    
+    <main class="main-content">
+        <header class="main-header">
+            <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+            <h1 id="page-title">{% if user.profile.current_role == 'client' %}Employer Dashboard{% else %}Freelancer Dashboard{% endif %}</h1>
+            <a href="{% url 'core:home' %}" class="btn btn-primary"><i class="fas fa-home"></i>Go to Homepage</a>
+        </header>
+        
+        <!-- == EMPLOYER PANELS == -->
+        <div id="employer-dashboard" class="content-panel {% if user.profile.current_role == 'client' %}active{% endif %}">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-briefcase"></i>Active Jobs</h3>
+                    <div class="value">{{ my_jobs|length }}</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i>Active</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-users"></i>Proposals Received</h3>
+                    <div class="value">{{ proposals_received_count }}</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i>New</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-money-bill-wave"></i>Total Spent</h3>
+                    <div class="value">NRS{{ total_spent|default:0 }}</div>
+                    <div class="trend"><i class="fas fa-chart-line"></i>Invested</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="employer-manage-jobs" class="content-panel">
+            <div class="card">
+                <h2><i class="fas fa-tasks"></i>Manage Your Posted Jobs</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Proposals</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in my_jobs %}
+                        <tr>
+                            <td><strong>{{ job.title }}</strong></td>
+                            <td><span class="badge">{{ job.proposals.count }}</span></td>
+                            <td><span class="status-badge status-{{ job.status }}">{{ job.get_status_display }}</span></td>
+                            <td><a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-primary btn-sm">View</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align: center; color: var(--gray-color);">No jobs found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- == FREELANCER PANELS == -->
+        <div id="freelancer-dashboard" class="content-panel {% if user.profile.current_role == 'freelancer' %}active{% endif %}">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3><i class="fas fa-file-alt"></i>Active Proposals</h3>
+                    <div class="value">{{ my_proposals|length }}</div>
+                    <div class="trend"><i class="fas fa-arrow-up"></i>Active</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-check-circle"></i>Completed Jobs</h3>
+                    <div class="value">{{ completed_jobs_count|default:0 }}</div>
+                    <div class="trend"><i class="fas fa-star"></i>Success</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-coins"></i>Total Earned</h3>
+                    <div class="value">NRS{{ total_earned|default:0 }}</div>
+                    <div class="trend"><i class="fas fa-chart-line"></i>Growing</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="freelancer-find-work" class="content-panel">
+            <div class="card">
+                <h2><i class="fas fa-search"></i>Find Work</h2>
+                <div class="gigs-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                    {% for job in available_jobs %}
+                    <article class="gig-card" style="border: 1px solid var(--border-color); border-radius: var(--border-radius); overflow: hidden; background: white; box-shadow: var(--shadow); transition: all 0.3s ease;">
+                        {% if job.image %}
+                            <img src="{{ job.image.url }}" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover;">
+                        {% else %}
+                            {% load static %}
+                            {% with category_info=job.category|slugify %}
+                                {% if category_info == "graphic-design" %}
+                                    <img src="https://img.icons8.com/color/96/000000/design.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FF6B6B;">
+                                {% elif category_info == "digital-marketing" %}
+                                    <img src="https://img.icons8.com/fluency/96/marketing.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #4ECDC4;">
+                                {% elif category_info == "writing-translation" %}
+                                    <img src="https://img.icons8.com/color/96/000000/translation.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #45B7D1;">
+                                {% elif category_info == "video-animation" %}
+                                    <img src="https://img.icons8.com/color/96/000000/video-editing.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #96CEB4;">
+                                {% elif category_info == "programming" %}
+                                    <img src="https://img.icons8.com/color/96/000000/programming.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FFEAA7;">
+                                {% elif category_info == "business" %}
+                                    <img src="https://img.icons8.com/color/96/000000/business.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #DDA0DD;">
+                                {% elif category_info == "lifestyle" %}
+                                    <img src="https://img.icons8.com/color/96/000000/lifestyle.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #98D8C8;">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x200.png?text={{ job.title|urlencode }}" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover;">
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                        <div class="gig-content" style="padding: 1.5rem;">
+                            <h3 class="gig-title" style="margin: 0 0 0.5rem 0;"><a href="{% url 'jobs:job_detail' job.id %}" style="color: var(--dark-color); text-decoration: none;">{{ job.title }}</a></h3>
+                            <div class="gig-price" style="color: var(--gray-color); margin-bottom: 1rem;">Starting at <strong>NRS{{ job.budget }}</strong></div>
+                            <p style="margin: 0 0 1rem 0; color: var(--gray-color);">{{ job.description|truncatechars:120 }}</p>
+                            <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-primary">Apply Now</a>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p>No jobs available at the moment.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div id="freelancer-my-proposals" class="content-panel">
+            <div class="card">
+                <h2><i class="fas fa-file-alt"></i>My Job Requests</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>My Bid</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proposal in my_proposals %}
+                        <tr>
+                            <td><strong>{{ proposal.job.title }}</strong></td>
+                            <td><span class="bid-amount">NRS{{ proposal.bid_amount }}</span></td>
+                            <td><span class="status-badge status-{{ proposal.status }}">{{ proposal.get_status_display }}</span></td>
+                            <td><a href="{% url 'jobs:job_detail' proposal.job.id %}" class="btn btn-primary btn-sm">View Job</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="text-align: center; color: var(--gray-color);">No job requests found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- == SHARED PANELS == -->
+        <div id="messages" class="content-panel">
+            {% include 'users/_messages_content.html' %}
+        </div>
+        
+        <div id="wallet" class="content-panel">
+            <div class="wallet-section">
+                <div class="wallet-content">
+                    <div class="wallet-info">
+                        <h3><i class="fas fa-wallet"></i>Your Balance</h3>
+                        <p class="wallet-balance">NRS{{ wallet_balance }}</p>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="withdraw-btn" onclick="openWithdrawModal()">
+                            <i class="fas fa-arrow-up"></i>Request Withdrawal
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-history"></i>Transaction History</h2>
+                <p style="color: var(--gray-color); text-align: center;">Transaction history will be displayed here.</p>
+            </div>
+        </div>
+        
+        <div id="withdrawModal" class="modal">
+            <div class="modal-content">
+                <h3><i class="fas fa-arrow-up"></i>Request Withdrawal</h3>
+                <input type="number" id="withdrawAmount" min="1" placeholder="Enter amount">
+                <div style="margin-top:1rem;">
+                    <button class="btn btn-primary" onclick="submitWithdrawRequest()">
+                        <i class="fas fa-check"></i>Submit
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeWithdrawModal()">
+                        <i class="fas fa-times"></i>Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="settings" class="content-panel">
+            {% include 'users/_settings_content.html' %}
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Role switching functionality
+    const roleInputs = document.querySelectorAll('input[name="role"]');
+    const employerNav = document.getElementById('employer-nav');
+    const freelancerNav = document.getElementById('freelancer-nav');
+    const contentPanels = document.querySelectorAll('.content-panel');
+    const pageTitle = document.getElementById('page-title');
+    
+    function switchRole(role) {
+        // Update navigation visibility
+        if (role === 'employer') {
+            employerNav.style.display = 'block';
+            freelancerNav.style.display = 'none';
+            pageTitle.textContent = 'Employer Dashboard';
+        } else {
+            employerNav.style.display = 'none';
+            freelancerNav.style.display = 'block';
+            pageTitle.textContent = 'Freelancer Dashboard';
+        }
+        
+        // Update content panels
+        contentPanels.forEach(panel => {
+            panel.classList.remove('active');
+        });
+        
+        if (role === 'employer') {
+            document.getElementById('employer-dashboard').classList.add('active');
+        } else {
+            document.getElementById('freelancer-dashboard').classList.add('active');
+        }
+    }
+    
+    // Handle role input changes
+    roleInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                const role = this.value;
+                // Submit form to switch role
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/users/switch-role/${role === 'employer' ? 'client' : 'freelancer'}/`;
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+    
+    // Navigation functionality
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all links
+            navLinks.forEach(l => l.classList.remove('active'));
+            
+            // Add active class to clicked link
+            this.classList.add('active');
+            
+            // Hide all content panels
+            contentPanels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Show target panel
+            const targetId = this.getAttribute('href').substring(1);
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
+    
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('dashboard-sidebar');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+});
+
+function openWithdrawModal() {
+    document.getElementById('withdrawModal').style.display = 'flex';
+}
+
+function closeWithdrawModal() {
+    document.getElementById('withdrawModal').style.display = 'none';
+}
+
+function submitWithdrawRequest() {
+    const amount = document.getElementById('withdrawAmount').value;
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        alert('Please enter a valid amount.');
+        return;
+    }
+    fetch('{% url 'core:request_withdrawal' %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: 'amount=' + amount
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Withdrawal request submitted!');
+            closeWithdrawModal();
+        } else {
+            alert('Error: ' + (data.error || 'Could not submit request.'));
+        }
+    });
+}
+</script>
+{% endblock %} 

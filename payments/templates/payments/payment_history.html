@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Payment History - Gig Nepal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Payment History</h1>
+    
+    <h2>Payments Made</h2>
+    {% for payment in payments_made %}
+    <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
+        <p><strong>To:</strong> {{ payment.payee.username }}</p>
+        <p><strong>Amount:</strong> NRS{{ payment.amount }}</p>
+        <p><strong>Type:</strong> {{ payment.get_payment_type_display }}</p>
+        <p><strong>Status:</strong> {{ payment.get_status_display }}</p>
+        <p><strong>Date:</strong> {{ payment.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+    {% empty %}
+    <p>No payments made yet.</p>
+    {% endfor %}
+    
+    <h2>Payments Received</h2>
+    {% for payment in payments_received %}
+    <div style="background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
+        <p><strong>From:</strong> {{ payment.payer.username }}</p>
+        <p><strong>Amount:</strong> NRS{{ payment.amount }}</p>
+        <p><strong>Type:</strong> {{ payment.get_payment_type_display }}</p>
+        <p><strong>Status:</strong> {{ payment.get_status_display }}</p>
+        <p><strong>Date:</strong> {{ payment.created_at|date:"M d, Y H:i" }}</p>
+    </div>
+    {% empty %}
+    <p>No payments received yet.</p>
+    {% endfor %}
+</div>
+{% endblock %} 

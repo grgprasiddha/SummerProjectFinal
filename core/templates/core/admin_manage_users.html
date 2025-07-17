@@ -1,0 +1,262 @@
+{% extends 'core/base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block extra_css %}
+<style>
+    .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+    .data-table th { background-color: #f8f9fa; }
+    .btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; cursor: pointer; border: none; font-weight: 600; margin-right: 0.5rem; }
+    .btn-danger { background-color: #dc3545; color: white; }
+    .btn-warning { background-color: #ffc107; color: #212529; }
+    .btn-info { background-color: #17a2b8; color: white; }
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+    .badge-danger { background-color: #f8d7da; color: #842029; }
+    .badge-warning { background-color: #fff3cd; color: #664d03; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="main-header" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+    <h1 style="margin: 0;">Manage Users</h1>
+    <a href="{% url 'core:admin_dashboard' %}" class="btn btn-warning">Back to Dashboard</a>
+</div>
+<div class="card">
+    <form method="get" style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+        <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search users by username..." class="search-input" style="flex:1;">
+        <button type="submit" class="btn btn-info">Search</button>
+    </form>
+    <script>
+    const CSRF_TOKEN = document.getElementById('csrf_token').value;
+    </script>
+    <table class="data-table" id="active-users-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Wallet Balance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr data-user-id="{{ user.id }}">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.profile.user_type|title }}</td>
+                <td class="status-cell">
+                    {% if user.profile.is_banned %}
+                        <span class="badge badge-danger">Banned</span>
+                    {% elif user.profile.timeout_until and user.profile.timeout_until|date:'U' > now|date:'U' %}
+                        <span class="badge badge-warning">Timeout until {{ user.profile.timeout_until|date:'M d, Y H:i' }}</span>
+                    {% else %}
+                        <span class="badge" style="background:#d4edda; color:#155724;">Active</span>
+                    {% endif %}
+                </td>
+                <td>NRS{{ user.wallet_balance }}</td>
+                <td class="actions-cell">
+                    <button class="btn btn-info" onclick="sendMessage({{ user.id }}, '{{ user.username }}')">Send Message</button>
+                    <button class="btn btn-danger" onclick="banUser({{ user.id }})">Ban</button>
+                    <button class="btn btn-warning" onclick="timeoutUser({{ user.id }})">Timeout</button>
+                    <button class="btn btn-info" onclick="openWalletModal({{ user.id }}, '{{ user.username }}')">Wallet</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- Banned Users Table -->
+{% if banned_users %}
+<div class="card" style="margin-top:2rem;">
+    <h2>Banned Users</h2>
+    <table class="data-table" id="banned-users-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Wallet Balance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in banned_users %}
+            <tr data-user-id="{{ user.id }}">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.profile.user_type|title }}</td>
+                <td class="status-cell"><span class="badge badge-danger">Banned</span></td>
+                <td>NRS{{ user.wallet_balance }}</td>
+                <td class="actions-cell">
+                    <button class="btn btn-info" onclick="sendMessage({{ user.id }}, '{{ user.username }}')">Send Message</button>
+                    <button class="btn btn-warning" onclick="unbanUser({{ user.id }})">Unban</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+<!-- Modal for sending message -->
+<div id="messageModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1000;">
+    <div style="background:#fff; padding:2rem; border-radius:8px; min-width:300px; max-width:90vw;">
+        <h3>Send Message to <span id="modalUsername"></span></h3>
+        <textarea id="modalMessage" rows="4" style="width:100%;"></textarea>
+        <div style="margin-top:1rem; text-align:right;">
+            <button class="btn btn-info" onclick="submitMessage()">Send</button>
+            <button class="btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+<!-- Wallet Modal -->
+<div id="walletModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); align-items:center; justify-content:center; z-index:1000;">
+    <div style="background:#fff; padding:2rem; border-radius:8px; min-width:300px; max-width:90vw;">
+        <h3>Adjust Wallet for <span id="walletModalUsername"></span></h3>
+        <input type="number" id="walletAmount" placeholder="Amount" style="width:100%; margin-bottom:1rem;">
+        <select id="walletType" style="width:100%; margin-bottom:1rem;">
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+        </select>
+        <input type="text" id="walletDesc" placeholder="Description (optional)" style="width:100%; margin-bottom:1rem;">
+        <div style="margin-top:1rem; text-align:right;">
+            <button class="btn btn-info" onclick="submitWallet()">Submit</button>
+            <button class="btn" onclick="closeWalletModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+let currentUserId = null;
+function banUser(userId) {
+    if (confirm('Are you sure you want to ban this user?')) {
+        fetch('{% url 'core:admin_ban_user' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: 'user_id=' + userId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not ban user.'));
+            }
+        });
+    }
+}
+function unbanUser(userId) {
+    if (confirm('Are you sure you want to unban this user?')) {
+        fetch('{% url 'core:admin_unban_user' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: 'user_id=' + userId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not unban user.'));
+            }
+        });
+    }
+}
+function timeoutUser(userId) {
+    let minutes = prompt('Timeout for how many minutes?', 60);
+    if (minutes && !isNaN(minutes)) {
+        fetch('{% url 'core:admin_timeout_user' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: 'user_id=' + userId + '&timeout_minutes=' + minutes
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not timeout user.'));
+            }
+        });
+    }
+}
+function sendMessage(userId, username) {
+    currentUserId = userId;
+    document.getElementById('modalUsername').innerText = username;
+    document.getElementById('modalMessage').value = '';
+    document.getElementById('messageModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('messageModal').style.display = 'none';
+}
+function submitMessage() {
+    const message = document.getElementById('modalMessage').value;
+    if (!message.trim()) { alert('Message cannot be empty.'); return; }
+    fetch('{% url 'core:admin_send_message' %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: 'user_id=' + currentUserId + '&message=' + encodeURIComponent(message)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Message sent successfully.');
+            closeModal();
+        } else {
+            alert('Error: ' + (data.error || 'Could not send message.'));
+        }
+    });
+}
+let walletUserId = null;
+function openWalletModal(userId, username) {
+    walletUserId = userId;
+    document.getElementById('walletModalUsername').innerText = username;
+    document.getElementById('walletAmount').value = '';
+    document.getElementById('walletType').value = 'credit';
+    document.getElementById('walletDesc').value = '';
+    document.getElementById('walletModal').style.display = 'flex';
+}
+function closeWalletModal() {
+    document.getElementById('walletModal').style.display = 'none';
+}
+function submitWallet() {
+    const amount = document.getElementById('walletAmount').value;
+    const type = document.getElementById('walletType').value;
+    const desc = document.getElementById('walletDesc').value;
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+        alert('Enter a valid amount.');
+        return;
+    }
+    fetch('{% url 'core:admin_wallet_adjust' %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': CSRF_TOKEN,
+        },
+        body: 'user_id=' + walletUserId + '&amount=' + amount + '&type=' + type + '&desc=' + encodeURIComponent(desc)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Wallet updated successfully.');
+            closeWalletModal();
+        } else {
+            alert('Error: ' + (data.error || 'Could not update wallet.'));
+        }
+    });
+}
+</script>
+{% endblock %} 

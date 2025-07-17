@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Browse Jobs - Gig Nepal{% endblock %}
+
+{% block content %}
+<style>
+.job-list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+.job-list-item {
+    display: flex;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1.5rem;
+    gap: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.job-list-image {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #f5f5f5;
+    flex-shrink: 0;
+}
+.job-list-info {
+    flex: 1;
+}
+.job-list-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.3rem 0;
+}
+.job-list-category {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+.job-list-budget {
+    font-size: 1rem;
+    color: #2c67ff;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+.job-list-actions {
+    margin-top: 0.5rem;
+}
+.job-search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+.job-search-bar input[type="text"] {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    min-width: 220px;
+}
+.job-search-bar select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+.job-search-bar button {
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    background: #2c67ff;
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+@media (max-width: 600px) {
+    .job-search-bar { flex-direction: column; align-items: stretch; }
+}
+</style>
+<div class="container">
+    <h2>Browse Jobs</h2>
+    <form method="get" class="job-search-bar">
+        <input type="text" name="search" placeholder="Search jobs..." value="{{ search_query|default:'' }}">
+        <select name="category">
+            <option value="">All Categories</option>
+            {% for value, label in categories %}
+                <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div class="job-list-view">
+        {% for job in jobs %}
+        <div class="job-list-item">
+            {% if job.image %}
+                <img src="{{ job.image.url }}" alt="{{ job.title }}" class="job-list-image">
+            {% else %}
+                {% with category_info=job.category|slugify %}
+                    {% if category_info == "graphic-design" %}
+                        <img src="https://img.icons8.com/color/96/000000/design.png" alt="{{ job.title }}" class="job-list-image" style="background: #FF6B6B;">
+                    {% elif category_info == "digital-marketing" %}
+                        <img src="https://img.icons8.com/fluency/96/marketing.png" alt="{{ job.title }}" class="job-list-image" style="background: #4ECDC4;">
+                    {% elif category_info == "writing-translation" %}
+                        <img src="https://img.icons8.com/color/96/000000/translation.png" alt="{{ job.title }}" class="job-list-image" style="background: #45B7D1;">
+                    {% elif category_info == "video-animation" %}
+                        <img src="https://img.icons8.com/color/96/000000/video-editing.png" alt="{{ job.title }}" class="job-list-image" style="background: #96CEB4;">
+                    {% elif category_info == "programming" %}
+                        <img src="https://img.icons8.com/color/96/000000/programming.png" alt="{{ job.title }}" class="job-list-image" style="background: #FFEAA7;">
+                    {% elif category_info == "business" %}
+                        <img src="https://img.icons8.com/color/96/000000/business.png" alt="{{ job.title }}" class="job-list-image" style="background: #DDA0DD;">
+                    {% elif category_info == "lifestyle" %}
+                        <img src="https://img.icons8.com/color/96/000000/spa.png" alt="{{ job.title }}" class="job-list-image" style="background: #98D8C8;">
+                    {% else %}
+                        <img src="https://via.placeholder.com/120x90.png?text={{ job.title|urlencode }}" alt="{{ job.title }}" class="job-list-image">
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+            <div class="job-list-info">
+                <div class="job-list-title"><a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a></div>
+                <div class="job-list-category">{{ job.get_category_display }}</div>
+                <div class="job-list-budget">NRS {{ job.budget }}</div>
+                <div class="job-list-actions">
+                    <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No jobs available at the moment.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

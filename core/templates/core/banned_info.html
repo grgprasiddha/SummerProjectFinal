@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}
+{% block title %}Account Banned{% endblock %}
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; padding: 2rem; text-align: center;">
+    <h1 style="color: #856404;">Account Banned</h1>
+    <p style="color: #856404; font-size: 1.2rem;">Your account has been banned by an administrator.<br>You cannot use the website while your account is banned.</p>
+    <a href="{% url 'users:logout' %}" class="btn btn-danger" style="margin-top: 2rem;">Logout</a>
+</div>
+{% endblock %} 

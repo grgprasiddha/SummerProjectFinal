@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - SproutGigs Clone</title>
+    <style>
+        /* ======================= CSS Styling ======================= */
+        :root {
+            --primary-color: #2c67ff;
+            --dark-color: #1a253c;
+            --gray-color: #6c757d;
+            --light-color: #ffffff;
+            --bg-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --font-family: 'Helvetica Neue', Arial, sans-serif;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--dark-color);
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-profile img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* --- Role Switcher --- */
+        .role-switcher {
+            display: flex;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            margin: 1.5rem 0;
+        }
+        .role-switcher input { display: none; }
+        .role-switcher label {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .role-switcher input:checked + label {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            font-weight: bold;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Initially hide one of the navs */
+        #freelancer-nav { display: none; }
+
+        .sidebar-nav li a {
+            display: block;
+            color: #adb5bd;
+            padding: 1rem;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .sidebar-nav li a:hover,
+        .sidebar-nav li a.active {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+        }
+
+        .sidebar-footer a {
+            color: #adb5bd;
+            text-decoration: none;
+        }
+        
+        /* --- Main Content --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .main-header h1 { margin: 0; }
+
+        .content-panel { display: none; }
+        .content-panel.active { display: block; }
+
+        /* --- Shared Components (Cards, Tables, etc.) --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+        .stat-card { background-color: var(--light-color); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
+        .card { background-color: var(--light-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem; margin-top: 2rem; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; cursor: pointer; border: none; font-weight: 600; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        
+        /* --- Job Feed Specific --- */
+        .job-listing { border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; background: white; }
+        .job-listing h3 { margin: 0; }
+        .job-listing .job-meta { color: var(--gray-color); font-size: 0.9rem; margin: 0.5rem 0; }
+
+        /* --- Responsive --- */
+        @media (max-width: 992px) {
+            .sidebar { left: -100%; z-index: 1000; transition: left 0.3s; }
+            .sidebar.active { left: 0; }
+            .main-content { width: 100%; margin-left: 0; }
+            .menu-toggle { display: block; font-size: 1.5rem; background: none; border: none; cursor: pointer; }
+        }
+        @media (min-width: 993px) {
+            .menu-toggle { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <!-- ======================= Sidebar ======================= -->
+        <aside class="sidebar" id="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <img src="https://via.placeholder.com/100" alt="User Avatar">
+                    <h4>John Doe</h4>
+                </div>
+            </div>
+
+            <div class="role-switcher">
+                <input type="radio" id="employer-role" name="role" value="employer" checked>
+                <label for="employer-role">Employer</label>
+                <input type="radio" id="freelancer-role" name="role" value="freelancer">
+                <label for="freelancer-role">Freelancer</label>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <!-- Employer Navigation -->
+                <ul id="employer-nav">
+                    <li><a href="#employer-dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="#employer-post-job" class="nav-link">Post a Job</a></li>
+                    <li><a href="#employer-manage-jobs" class="nav-link">Manage Jobs</a></li>
+                    <li><a href="#messages" class="nav-link">Messages</a></li>
+                    <li><a href="#wallet" class="nav-link">Wallet</a></li>
+                    <li><a href="#settings" class="nav-link">Settings</a></li>
+                </ul>
+                <!-- Freelancer Navigation -->
+                <ul id="freelancer-nav">
+                    <li><a href="#freelancer-dashboard" class="nav-link">Dashboard</a></li>
+                    <li><a href="#freelancer-find-work" class="nav-link">Find Work</a></li>
+                    <li><a href="#freelancer-my-proposals" class="nav-link">My Proposals</a></li>
+                    <li><a href="#messages" class="nav-link">Messages</a></li>
+                    <li><a href="#wallet" class="nav-link">Wallet</a></li>
+                    <li><a href="#settings" class="nav-link">Settings</a></li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#">Logout</a>
+            </div>
+        </aside>
+
+        <!-- ======================= Main Content ======================= -->
+        <main class="main-content">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+                <h1 id="page-title">Employer Dashboard</h1>
+                <a href="#" class="btn btn-primary">Go to Homepage</a>
+            </header>
+
+            <!-- == EMPLOYER PANELS == -->
+            <div id="employer-dashboard" class="content-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>Active Jobs</h3><div class="value">4</div></div>
+                    <div class="stat-card"><h3>Proposals Received</h3><div class="value">32</div></div>
+                    <div class="stat-card"><h3>Total Spent</h3><div class="value">NRS1,250</div></div>
+                </div>
+            </div>
+            <div id="employer-post-job" class="content-panel">
+                <div class="card">
+                    <h2>Post a New Job</h2>
+                    <form>
+                        <div class="form-group"><label for="job-title">Job Title</label><input type="text" id="job-title" placeholder="e.g., I need a modern logo design"></div>
+                        <div class="form-group"><label for="job-desc">Description</label><textarea id="job-desc" rows="6" placeholder="Describe the project in detail..."></textarea></div>
+                        <div class="form-group"><label for="job-category">Category</label><select id="job-category"><option>Graphic & Design</option><option>Digital Marketing</option></select></div>
+                        <div class="form-group"><label for="job-budget">Budget (NRS)</label><input type="number" id="job-budget" placeholder="e.g., 250"></div>
+                        <button type="submit" class="btn btn-primary">Post Job</button>
+                    </form>
+                </div>
+            </div>
+            <div id="employer-manage-jobs" class="content-panel">
+                 <div class="card">
+                    <h2>Manage Your Posted Jobs</h2>
+                    <table class="data-table">
+                        <thead><tr><th>Title</th><th>Proposals</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            <tr><td>Modern Logo Design</td><td>15</td><td>Open</td><td><a href="#">View</a></td></tr>
+                            <tr><td>Video Editor for YouTube</td><td>8</td><td>Open</td><td><a href="#">View</a></td></tr>
+                            <tr><td>SEO Article Writer</td><td>5</td><td>Closed</td><td><a href="#">View</a></td></tr>
+                        </tbody>
+                    </table>
+                 </div>
+            </div>
+
+            <!-- == FREELANCER PANELS == -->
+            <div id="freelancer-dashboard" class="content-panel">
+                 <div class="stats-grid">
+                    <div class="stat-card"><h3>Active Proposals</h3><div class="value">5</div></div>
+                    <div class="stat-card"><h3>Completed Jobs</h3><div class="value">12</div></div>
+                    <div class="stat-card"><h3>Total Earned</h3><div class="value">NRS4,800</div></div>
+                </div>
+            </div>
+            <div id="freelancer-find-work" class="content-panel">
+                <div class="card">
+                    <h2>Find Work</h2>
+                    <div class="job-listing">
+                        <h3>Looking for a social media manager</h3>
+                        <div class="job-meta">Budget: NRS500/month | Posted: 2 hours ago</div>
+                        <p>We need an expert to manage our Facebook and Instagram accounts...</p>
+                        <button class="btn btn-primary">Apply Now</button>
+                    </div>
+                    <div class="job-listing">
+                        <h3>Website Redesign Project</h3>
+                        <div class="job-meta">Budget: NRS1,500 | Posted: 1 day ago</div>
+                        <p>Seeking a talented designer to redesign our e-commerce website...</p>
+                        <button class="btn btn-primary">Apply Now</button>
+                    </div>
+                </div>
+            </div>
+            <div id="freelancer-my-proposals" class="content-panel">
+                <div class="card">
+                    <h2>My Proposals</h2>
+                    <table class="data-table">
+                        <thead><tr><th>Job Title</th><th>My Bid</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            <tr><td>Social Media Manager</td><td>NRS450/month</td><td>Submitted</td><td><a href="#">Withdraw</a></td></tr>
+                            <tr><td>Website Redesign</td><td>NRS1,400</td><td>Submitted</td><td><a href="#">Withdraw</a></td></tr>
+                            <tr><td>Blog Post Writing</td><td>NRS50</td><td>Accepted</td><td><a href="#">View Job</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- == SHARED PANELS == -->
+            <div id="messages" class="content-panel"><div class="card"><h2>Messages</h2><p>Messaging interface goes here.</p></div></div>
+            <div id="wallet" class="content-panel"><div class="card"><h2>Wallet</h2><p>Balance: NRS230. Transaction history goes here.</p></div></div>
+            <div id="settings" class="content-panel"><div class="card"><h2>Settings</h2><p>Profile settings, notifications, and password management go here.</p></div></div>
+        </main>
+    </div>
+
+    <!-- ======================= JavaScript ======================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleRadios = document.querySelectorAll('input[name="role"]');
+            const employerNav = document.getElementById('employer-nav');
+            const freelancerNav = document.getElementById('freelancer-nav');
+            const allNavLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            const pageTitle = document.getElementById('page-title');
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('dashboard-sidebar');
+
+            function switchRole(role) {
+                // Toggle navigation menus
+                employerNav.style.display = (role === 'employer') ? 'block' : 'none';
+                freelancerNav.style.display = (role === 'freelancer') ? 'block' : 'none';
+
+                // Reset all panels and links
+                contentPanels.forEach(p => p.classList.remove('active'));
+                allNavLinks.forEach(l => l.classList.remove('active'));
+
+                // Activate the correct dashboard
+                if (role === 'employer') {
+                    document.getElementById('employer-dashboard').classList.add('active');
+                    employerNav.querySelector('.nav-link').classList.add('active');
+                    pageTitle.textContent = 'Employer Dashboard';
+                } else {
+                    document.getElementById('freelancer-dashboard').classList.add('active');
+                    freelancerNav.querySelector('.nav-link').classList.add('active');
+                    pageTitle.textContent = 'Freelancer Dashboard';
+                }
+            }
+
+            // --- Event Listener for Role Switcher ---
+            roleRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    switchRole(this.value);
+                });
+            });
+
+            // --- Event Listener for All Navigation Links ---
+            allNavLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // Update active link in its own nav
+                    this.closest('ul').querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show correct panel
+                    contentPanels.forEach(panel => {
+                        panel.classList.toggle('active', panel.id === targetId);
+                    });
+
+                    // Update title
+                    pageTitle.textContent = this.textContent;
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 992) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            });
+
+            // --- Mobile Menu Toggle ---
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+
+            // --- Initial setup ---
+            switchRole('employer');
+        });
+    </script>
+</body>
+</html>

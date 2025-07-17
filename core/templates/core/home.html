@@ -1,0 +1,108 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Gig Nepal - Freelance Marketplace{% endblock %}
+
+{% block content %}
+    <!-- ======================= Hero Section ======================= -->
+    <section class="hero-section" style="position: relative; background: url('{% static 'core/images/homepage_bg.jpg' %}') center center/cover no-repeat;">
+        <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.70); z-index: 1;"></div>
+        <div class="hero-content" style="position: relative; z-index: 2;">
+            <h1>Hire Freelancers. Make things happen.</h1>
+            <p>An online marketplace connecting skilled professionals with businesses. Find the right talent or the right job, right here.</p>
+            <div class="hero-buttons">
+                <a href="{% url 'jobs:browse' %}" class="btn btn-primary">Find Talent</a>
+                <a href="{% url 'jobs:post_job' %}" class="btn btn-secondary">Find Work</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================= Browse Categories Section ======================= -->
+    <section class="categories-section container">
+        <h2>Explore the Marketplace</h2>
+        <div class="category-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <img src="{{ category.image }}" alt="{{ category.name }} Icon"/>
+                <h3>{{ category.name }}</h3>
+                <p>Professional Services</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ======================= Featured Gigs Section ======================= -->
+    <section class="featured-gigs-section container">
+        <h2>Trending Services</h2>
+        <div class="gigs-grid">
+            {% for job in featured_jobs %}
+            <article class="gig-card">
+                {% if job.image %}
+                    <img src="{{ job.image.url }}" alt="{{ job.title }}" class="gig-image">
+                {% else %}
+                    {% load static %}
+                    {% with category_info=job.category|slugify %}
+                        {% if category_info == "graphic-design" %}
+                            <img src="https://img.icons8.com/color/96/000000/design.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FF6B6B;">
+                        {% elif category_info == "digital-marketing" %}
+                            <img src="https://img.icons8.com/fluency/96/marketing.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #4ECDC4;">
+                        {% elif category_info == "writing-translation" %}
+                            <img src="https://img.icons8.com/color/96/000000/translation.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #45B7D1;">
+                        {% elif category_info == "video-animation" %}
+                            <img src="https://img.icons8.com/color/96/000000/video-editing.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #96CEB4;">
+                        {% elif category_info == "programming" %}
+                            <img src="https://img.icons8.com/color/96/000000/programming.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FFEAA7;">
+                        {% elif category_info == "business" %}
+                            <img src="https://img.icons8.com/color/96/000000/business.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #DDA0DD;">
+                        {% elif category_info == "lifestyle" %}
+                            <img src="https://img.icons8.com/color/96/000000/lifestyle.png" alt="{{ job.title }}" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #98D8C8;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x200.png?text={{ job.title|urlencode }}" alt="{{ job.title }}" class="gig-image">
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS{{ job.budget }}</strong></div>
+                </div>
+            </article>
+            {% empty %}
+            <article class="gig-card">
+                <img src="https://img.icons8.com/color/96/000000/design.png" alt="Graphic Design" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FF6B6B;">
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="#">I will design a stunning modern minimalist logo</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS50</strong></div>
+                </div>
+            </article>
+            <article class="gig-card">
+                <img src="https://img.icons8.com/fluency/96/marketing.png" alt="Digital Marketing" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #4ECDC4;">
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="#">I will write professional SEO articles and blog posts</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS25</strong></div>
+                </div>
+            </article>
+            <article class="gig-card">
+                <img src="https://img.icons8.com/color/96/000000/video-editing.png" alt="Video Editing" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #96CEB4;">
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="#">I will be your pro video editor for any project</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS75</strong></div>
+                </div>
+            </article>
+            <article class="gig-card">
+                <img src="https://img.icons8.com/color/96/000000/programming.png" alt="Programming" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #FFEAA7;">
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="#">I will develop a responsive website for your business</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS100</strong></div>
+                </div>
+            </article>
+            <article class="gig-card">
+                <img src="https://img.icons8.com/color/96/000000/business.png" alt="Business" class="gig-image" style="width: 100%; height: 200px; object-fit: cover; background: #DDA0DD;">
+                <div class="gig-content">
+                    <h3 class="gig-title"><a href="#">I will create a comprehensive business plan</a></h3>
+                    <div class="gig-price">Starting at <strong>NRS150</strong></div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %} 

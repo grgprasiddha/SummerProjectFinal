@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Sign Up - SproutGigs Clone{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2c67ff;
+        --secondary-color: #f0f4ff;
+        --dark-color: #1a253c;
+        --gray-color: #6c757d;
+        --light-color: #ffffff;
+        --border-color: #dee2e6;
+        --font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    body {
+        background-color: var(--secondary-color);
+    }
+    .page-header {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+    }
+    .header-logo a {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--dark-color);
+        text-decoration: none;
+    }
+    .auth-container {
+        background-color: var(--light-color);
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        margin: 4rem auto 1rem auto;
+    }
+    .auth-container h1 {
+        margin-top: 0;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(44, 103, 255, 0.2);
+    }
+    .terms-group {
+        font-size: 0.9rem;
+        color: var(--gray-color);
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+    a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        background-color: var(--primary-color);
+        color: var(--light-color);
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-submit:hover {
+        background-color: #1a4ccc;
+    }
+    .switch-auth {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        color: var(--gray-color);
+    }
+    .errorlist {
+        color: #b94a48;
+        margin: 0 0 1rem 0;
+        padding: 0;
+        list-style: none;
+        font-size: 0.95em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div class="header-logo">
+        <a href="{% url 'core:home' %}">SproutGigs</a>
+    </div>
+</header>
+<div class="auth-container">
+    <h1>Create an Account</h1>
+    <form method="post" action="">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div style="color: #b94a48; margin-bottom: 1rem;">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-group">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div class="form-group">
+            {{ form.password1.label_tag }}
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+        </div>
+        <div class="form-group">
+            {{ form.password2.label_tag }}
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+        <div class="terms-group">
+            {{ form.terms }}
+            <label for="id_terms" style="font-weight: normal; display: inline;">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</label>
+            {{ form.terms.errors }}
+        </div>
+        <button type="submit" class="btn-submit">Create Account</button>
+    </form>
+    <div class="switch-auth">
+        Already have an account? <a href="{% url 'users:login' %}">Log In</a>
+    </div>
+</div>
+{% endblock %} 
