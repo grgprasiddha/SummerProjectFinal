@@ -61,6 +61,18 @@ def post_job(request):
             job = form.save(commit=False)
             job.client = request.user
             job.save()
+
+            # Notify all freelancers with job alerts enabled
+            from users.models import UserProfile, Notification
+            freelancers = UserProfile.objects.filter(user_type='freelancer', job_alerts=True).select_related('user')
+            for freelancer in freelancers:
+                Notification.objects.create(
+                    recipient=freelancer.user,
+                    notification_type='job_posted',
+                    title=f'New Job Posted: "{job.title}"',
+                    message=f'A new job "{job.title}" has been posted in {job.get_category_display()}.',
+                    related_job=job
+                )
             messages.success(request, 'Job posted successfully!')
             return redirect('jobs:job_detail', job_id=job.id)
     else:

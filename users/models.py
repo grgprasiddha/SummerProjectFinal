@@ -87,6 +87,8 @@ class Notification(models.Model):
         ('payment_sent', 'Payment Sent'),
         ('dispute_created', 'Dispute Created'),
         ('dispute_resolved', 'Dispute Resolved'),
+        ('job_posted', 'Job Posted'),
+        ('message', 'Message'),
         ('system', 'System Message'),
     )
     

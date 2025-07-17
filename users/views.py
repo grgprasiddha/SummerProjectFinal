@@ -337,6 +337,16 @@ def send_message(request):
             content=content
         )
         
+        # Create notification for the recipient if they allow message notifications
+        if hasattr(recipient, 'profile') and getattr(recipient.profile, 'message_notifications', True):
+            from .models import Notification
+            Notification.objects.create(
+                recipient=recipient,
+                notification_type='message',
+                title=f'New Message from {request.user.username}',
+                message=f'You have received a new message.',
+            )
+        
         # Return success response
         return JsonResponse({
             'success': True,
